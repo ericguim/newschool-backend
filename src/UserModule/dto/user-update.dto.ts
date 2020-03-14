@@ -1,5 +1,5 @@
 import { User } from '../entity';
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsNumber } from 'class-validator';
 import { Expose } from 'class-transformer';
 import { RoleEnum } from '../../SecurityModule/enum';
 
@@ -18,6 +18,11 @@ export class UserUpdateDTO {
   @IsString()
   @Expose()
   email: User['email'];
+
+  @IsNotEmpty()
+  @IsNumber()
+  @Expose()
+  points: User['points'];
 
   @IsOptional()
   @IsString()

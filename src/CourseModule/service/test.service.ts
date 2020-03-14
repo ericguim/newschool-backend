@@ -5,16 +5,21 @@ import {
 } from '@nestjs/common';
 import { Transactional } from 'typeorm-transactional-cls-hooked';
 import { TestRepository } from '../repository';
-import { Part, Test } from '../entity';
+import { Part, Test, TestAttempt } from '../entity';
 import { NewTestDTO, TestUpdateDTO } from '../dto';
 import { MoreThan } from 'typeorm';
 import { PartService } from './part.service';
+import { CourseTakenService } from '../../CourseTakenModule';
+import { User, UserService } from '../../UserModule';
+import { TestResultEnum } from '../enum';
 
 @Injectable()
 export class TestService {
   constructor(
     private readonly partService: PartService,
     private readonly repository: TestRepository,
+    private readonly userService: UserService,
+    private readonly courseTakenService: CourseTakenService,
   ) {}
 
   @Transactional()
@@ -101,6 +106,7 @@ export class TestService {
 
   @Transactional()
   public async checkTest(
+    userId: User['id'],
     id: Test['id'],
     chosenAlternative: string,
   ): Promise<boolean> {
@@ -109,9 +115,32 @@ export class TestService {
       throw new NotFoundException('No test found');
     }
 
-    return (
-      test.correctAlternative.toLowerCase() == chosenAlternative.toLowerCase()
-    );
+    const user = await this.userService.findById(userId)
+    const result = test.correctAlternative.toUpperCase() == chosenAlternative.toUpperCase();
+
+    if (result) {
+      
+      await this.addNewTestAttempt(await this.prepareTestAttempt(user, test, result ? TestResultEnum.CORRECT : TestResultEnum.WRONG));
+      this.courseTakenService.addPointRequest(user);
+    }
+
+    return result;
+  }
+
+  @Transactional()
+  private async prepareTestAttempt(user: User, test: Test, result: TestResultEnum): Promise<TestAttemptDTO>{
+
+    return this.testAttemptMapper.toNewTestAttemptDTO(user, test, result);
+  }
+
+  @Transactional()
+  private async addNewTestAttempt(testAttempt: NewTestAttemptDTO): Promise<void>{
+    if(await this.testAttemptRepository.checkTestAlreadyPassed(testAttempt.user, testAttempt.test)){
+      await this.testAttemptRepository.save({
+        ...testAttempt,
+        testNumber: 1 + (await this.repository.count({ where: { user: testAttempt.user, test: testAttempt.test } })),
+      });
+    }
   }
 
   @Transactional()

@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 import { RoleDTO } from '../../SecurityModule/dto';
 import { CourseDTO } from '../../CourseModule/dto';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsNumber } from 'class-validator';
 
 export class UserDTO {
   @IsNotEmpty()
@@ -20,6 +20,11 @@ export class UserDTO {
   @IsString()
   @Expose()
   email: User['email'];
+
+  @IsNotEmpty()
+  @IsNumber()
+  @Expose()
+  points: User['points'];
 
   @IsOptional()
   @IsString()

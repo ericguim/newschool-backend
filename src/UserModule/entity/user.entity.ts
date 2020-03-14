@@ -12,7 +12,8 @@ import { Role } from '../../SecurityModule';
 import { ChangePassword } from './change-password.entity';
 import { Certificate } from '../../CertificateModule/entity';
 import { Expose } from 'class-transformer';
-import { CourseTaken } from '../../CourseTakenModule/entity';
+import { CourseTaken, PointRequest } from '../../CourseTakenModule/entity';
+import { TestAttempt } from '../../CourseModule/entity';
 
 @Entity()
 export class User extends Audit {
@@ -33,6 +34,10 @@ export class User extends Audit {
   @Column()
   @Expose()
   password: string;
+
+  @Column({ name: 'points', nullable: false, default: 0 })
+  @Expose()
+  points: number;
 
   @Column({ name: 'url_facebook', nullable: true })
   @Expose()
@@ -79,6 +84,12 @@ export class User extends Audit {
     (courseTaken: CourseTaken) => courseTaken.user,
   )
   coursesTaken: CourseTaken[];
+
+  @OneToMany<TestAttempt>('TestAttempt', (testAttempt: TestAttempt) => testAttempt.user)
+  testAttempts: TestAttempt[];
+
+  @ManyToMany<PointRequest>('PointRequest', (pointRequest: PointRequest) => pointRequest.user)
+  pointsToRegister: PointRequest[]
 
   validPassword(password: string) {
     const hash = crypto

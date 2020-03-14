@@ -1,5 +1,5 @@
 import { User } from '../entity';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsNumber } from 'class-validator';
 import { Expose } from 'class-transformer';
 
 export class SelfUpdateDTO {
@@ -17,6 +17,11 @@ export class SelfUpdateDTO {
   @IsString()
   @Expose()
   email: User['email'];
+
+  @IsNotEmpty()
+  @IsNumber()
+  @Expose()
+  points: User['points'];
 
   @IsOptional()
   @IsString()

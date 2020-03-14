@@ -11,6 +11,7 @@ import {
 import { Part } from './part.entity';
 import { Expose } from 'class-transformer';
 import { CourseTaken } from '../../CourseTakenModule/entity';
+import { TestAttempt } from './test-attempt.entity';
 
 @Unique(['sequenceNumber', 'part'])
 @Entity()
@@ -78,9 +79,10 @@ export class Test extends Audit {
   })
   part: Part;
 
-  @OneToMany<CourseTaken>(
-    'CourseTaken',
-    (courseTaken: CourseTaken) => courseTaken.currentTest,
-  )
+  @OneToMany<CourseTaken>('CourseTaken', (courseTaken: CourseTaken) => courseTaken.currentTest)
   currentCoursesTaken: CourseTaken[];
+
+  @OneToMany<TestAttempt>('testAttempt', (TestAttempt: TestAttempt) => TestAttempt.test)
+  testAttempts: TestAttempt[];
+
 }
